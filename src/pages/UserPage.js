@@ -2,6 +2,9 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState } from 'react';
+import * as React from 'react';
+
+
 // @mui
 import {
   Card,
@@ -21,7 +24,11 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  Box,
+  Modal,
+  TextField,
 } from '@mui/material';
+
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
@@ -46,6 +53,17 @@ const TABLE_HEAD = [
 ];
 
 // ----------------------------------------------------------------------
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -148,9 +166,24 @@ export default function UserPage() {
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+  // Modal user deposit
+  const [openModal, setOpenModal] = React.useState(false);
+  const [value, setValue] = React.useState("");
+
+  const handleOpen = () => setOpenModal(true);
+  const handleClose = () => setOpenModal(false);
+  const handleChange = (event) => {
+    setValue(event.target.value);
+  }
+  const handleSubmit = () => {
+    console.log("Submitted value:", value);
+    // TODO: Handle submit logic here
+    handleClose();
+  }
 
   return (
     <>
+
       <Helmet>
         <title> User | Minimal UI </title>
       </Helmet>
@@ -285,10 +318,41 @@ export default function UserPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={handleOpen}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
+          Deposit
         </MenuItem>
+        <Modal
+          open={openModal}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Nhập số tiền muốn nạp cho tài khoản:{filteredUsers.email}
+            </Typography>
+
+            <TextField
+              id="outlined-basic"
+              label="Enter value"
+              variant="outlined"
+              value={value}
+              onChange={handleChange}
+              sx={{ mt: 3, width: '100%' }}
+            />
+
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+              <Button onClick={handleClose} sx={{ mr: 2 }}>
+                Đóng
+              </Button>
+
+              <Button onClick={handleSubmit} variant="contained">
+                Xác nhận
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
 
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
