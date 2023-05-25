@@ -1,15 +1,19 @@
+// firebase
+import firebase from 'firebase/compat/app';
+import { StyledFirebaseAuth } from 'react-firebaseui';
+
+import 'firebase/compat/auth';
 import { Helmet } from 'react-helmet-async';
 // @mui
+import { Button, Container, Divider, Link, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { Link, Container, Typography, Divider, Stack, Button } from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
 // components
-import Logo from '../components/logo';
 import Iconify from '../components/iconify';
+import Logo from '../components/logo';
 // sections
 import { LoginForm } from '../sections/auth/login';
-
 // ----------------------------------------------------------------------
 
 const StyledRoot = styled('div')(({ theme }) => ({
@@ -37,6 +41,17 @@ const StyledContent = styled('div')(({ theme }) => ({
   flexDirection: 'column',
   padding: theme.spacing(12, 0),
 }));
+
+const uiConfig = {
+  // Popup signin flow rather than redirect flow.
+  signInFlow: 'redirect',
+  signInSuccessUrl: '/dashboard/app',
+  // We will display Google and Facebook as auth providers.
+  signInOptions: [
+    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+    // firebase.auth.FacebookAuthProvider.PROVIDER_ID
+  ],
+};
 
 // ----------------------------------------------------------------------
 
@@ -77,8 +92,10 @@ export default function LoginPage() {
               Don’t have an account? {''}
               <Link variant="subtitle2">Get started</Link>
             </Typography>
+            <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
 
-            <Stack direction="row" spacing={2}>
+
+            {/* <Stack direction="row" spacing={2} >
               <Button fullWidth size="large" color="inherit" variant="outlined">
                 <Iconify icon="eva:google-fill" color="#DF3E30" width={22} height={22} />
               </Button>
@@ -90,15 +107,15 @@ export default function LoginPage() {
               <Button fullWidth size="large" color="inherit" variant="outlined">
                 <Iconify icon="eva:twitter-fill" color="#1C9CEA" width={22} height={22} />
               </Button>
-            </Stack>
+            </Stack> */}
 
             <Divider sx={{ my: 3 }}>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 OR
               </Typography>
             </Divider>
-
             <LoginForm />
+
           </StyledContent>
         </Container>
       </StyledRoot>

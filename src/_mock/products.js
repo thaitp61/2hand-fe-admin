@@ -55,3 +55,4 @@ const products = [...Array(24)].map((_, index) => {
 });
 
 export default products;
+
