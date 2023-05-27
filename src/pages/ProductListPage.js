@@ -28,13 +28,15 @@ import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+import ProductListToolbar from '../sections/@dashboard/products/ProductListToolbar';
+
 // mock
 import PRODUCTLIST from '../_mock/productlist';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-    { id: 'product', label: 'Product', alignRight: false },
+    { id: 'name', label: 'Name Product', alignRight: false },
     { id: 'email', label: 'Email', alignRight: false },
     { id: 'createAt', label: 'Create At', alignRight: false },
     { id: 'status', label: 'Status', alignRight: false },
@@ -163,7 +165,7 @@ export default function UserPage() {
                 </Stack>
 
                 <Card>
-                    <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+                    <ProductListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
                     <Scrollbar>
                         <TableContainer sx={{ minWidth: 800 }}>

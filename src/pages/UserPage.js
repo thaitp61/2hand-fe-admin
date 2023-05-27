@@ -41,9 +41,9 @@ import USERLIST from '../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Email', alignRight: false },
+  { id: 'name', label: 'Name', alignRight: false },
   // { id: 'address', label: 'Address', alignRight: false },
-  { id: 'email', label: 'Name', alignRight: false },
+  { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Phone', alignRight: false },
   { id: 'wallet', label: 'Wallet', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
@@ -89,7 +89,7 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (_user) => _user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   }
   return stabilizedThis.map((el) => el[0]);
 }
@@ -125,7 +125,7 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
+      const newSelecteds = USERLIST.map((n) => n.email);
       setSelected(newSelecteds);
       return;
     }
@@ -185,7 +185,7 @@ export default function UserPage() {
     <>
 
       <Helmet>
-        <title> User | Minimal UI </title>
+        <title> User</title>
       </Helmet>
 
       <Container>
