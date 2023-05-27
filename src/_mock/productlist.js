@@ -38,6 +38,7 @@ const productlist = [...Array(24)].map((_, index) => ({
     avatarUrl: `/assets/images/products/product_${index + 1}.jpg`,
     name: PRODUCT_NAME[index],
     // company: faker.company.name(),
+    email: faker.internet.email(),
     createAt: faker.date.between('2023-05-01', '2023-05-31').toString(),
     price: faker.datatype.number({ min: 1000, max: 100000, precision: 1000 }),
     status: sample(['on sale', 'sold']),

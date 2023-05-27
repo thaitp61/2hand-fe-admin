@@ -10,6 +10,7 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import ProductListPage from './pages/ProductListPage';
 import DashboardAppPage from './pages/DashboardAppPage';
+import WalletPage from './pages/WalletPage';
 
 // ----------------------------------------------------------------------
 
@@ -25,6 +26,8 @@ export default function Router() {
         { path: 'products', element: <ProductsPage /> },
         { path: 'productlist', element: <ProductListPage /> },
         { path: 'blog', element: <BlogPage /> },
+        { path: 'wallet', element: <WalletPage /> },
+
       ],
     },
     {

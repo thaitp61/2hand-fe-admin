@@ -35,6 +35,7 @@ import PRODUCTLIST from '../_mock/productlist';
 
 const TABLE_HEAD = [
     { id: 'product', label: 'Product', alignRight: false },
+    { id: 'email', label: 'Email', alignRight: false },
     { id: 'createAt', label: 'Create At', alignRight: false },
     { id: 'status', label: 'Status', alignRight: false },
     { id: 'price', label: 'Price', alignRight: false },
@@ -148,7 +149,7 @@ export default function UserPage() {
     return (
         <>
             <Helmet>
-                <title> User | Minimal UI </title>
+                <title> ProductList </title>
             </Helmet>
 
             <Container>
@@ -157,7 +158,7 @@ export default function UserPage() {
                         Product
                     </Typography>
                     <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-                        New User
+                        New Product
                     </Button>
                 </Stack>
 
@@ -178,7 +179,7 @@ export default function UserPage() {
                                 />
                                 <TableBody>
                                     {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, name, createAt, status, price, avatarUrl } = row;
+                                        const { id, name, email, createAt, status, price, avatarUrl } = row;
                                         const selectedUser = selected.indexOf(name) !== -1;
                                         return (
                                             <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
@@ -194,6 +195,9 @@ export default function UserPage() {
                                                         </Typography>
                                                     </Stack>
                                                 </TableCell>
+
+                                                <TableCell align="left">{email}</TableCell>
+
 
                                                 <TableCell align="left">{createAt}</TableCell>
 
