@@ -1,4 +1,6 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import { RequireAuth } from 'react-auth-kit'
+
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
@@ -18,7 +20,10 @@ export default function Router() {
   const routes = useRoutes([
     {
       path: '/dashboard',
-      element: <DashboardLayout />,
+      element:
+        <RequireAuth loginPath="/login">
+          <DashboardLayout />
+        </RequireAuth>,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
@@ -37,7 +42,7 @@ export default function Router() {
     {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
+        { element: <Navigate to="/login" />, index: true },
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],

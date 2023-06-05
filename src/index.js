@@ -1,4 +1,6 @@
 import ReactDOM from 'react-dom/client';
+import { AuthProvider } from "react-auth-kit";
+import { BrowserRouter } from "react-router-dom";
 
 //
 import App from './App';
@@ -9,7 +11,16 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-root.render(<App />);
+root.render(
+    <AuthProvider
+        authType={"cookie"}
+        authName={"_auth"}
+        cookieDomain={window.location.hostname}
+        cookieSecure={false}
+    >
+        <App />
+    </AuthProvider>
+);
 
 // If you want to enable client cache, register instead.
 serviceWorker.unregister();

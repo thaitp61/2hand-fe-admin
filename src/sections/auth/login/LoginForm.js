@@ -1,5 +1,10 @@
 import { useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
+import { useSignIn } from "react-auth-kit";
+import { useFormik } from "formik";
+
+import axios, { AxiosError } from "axios";
 // @mui
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
@@ -8,23 +13,67 @@ import Iconify from '../../../components/iconify';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm() {
-  const navigate = useNavigate();
+export default function LoginForm(props) {
+  // login
+  const [error, setError] = useState("");
+  const signIn = useSignIn();
+  const onSubmit = async (values) => {
+    console.log("Values: ", values);
+    setError("");
+
+    try {
+      const response = await axios.post(
+        "https://2hand.monoinfinity.net/api/v1.0/auth/login",
+        values
+      );
+      console.log(values)
+
+      signIn({
+        token: response.data.token,
+        expiresIn: 3600,
+        tokenType: "Bearer",
+        authState: { email: values.email },
+      });
+      navigate('/dashboard');
+    } catch (err) {
+      if (err && err instanceof AxiosError)
+        setError(err.response?.data.message);
+      else if (err && err instanceof Error) setError(err.message);
+
+      console.log("Error: ", err);
+    }
+  };
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    onSubmit,
+  });
+
+  //----------------------------------------------------------------
 
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const handleClick = () => {
-    navigate('/dashboard', { replace: true });
-  };
 
   return (
-    <>
+
+    <form onSubmit={formik.handleSubmit}>
+
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
+        <TextField
+          name="email"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          clearOnEscape
+        />
 
         <TextField
           name="password"
           label="Password"
+          value={formik.values.password}
+          onChange={formik.handleChange}
           type={showPassword ? 'text' : 'password'}
           InputProps={{
             endAdornment: (
@@ -45,9 +94,10 @@ export default function LoginForm() {
         </Link>
       </Stack>
 
-      <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
+      <LoadingButton fullWidth size="large" type="submit" variant="contained" isLoading={formik.isSubmitting} >
         Login
       </LoadingButton>
-    </>
+    </form>
+
   );
 }

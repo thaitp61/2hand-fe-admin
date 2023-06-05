@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSignOut } from 'react-auth-kit';
+import { useNavigate } from 'react-router';
+
 // @mui
 import { alpha } from '@mui/material/styles';
 import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
@@ -25,6 +28,16 @@ const MENU_OPTIONS = [
 // ----------------------------------------------------------------------
 
 export default function AccountPopover() {
+  // signout
+  const signOut = useSignOut();
+  const navigate = useNavigate();
+
+  const logout = () => {
+    signOut();
+    navigate("/login");
+  }
+  // ----------------------------------------------------------------
+
   const [open, setOpen] = useState(null);
 
   const handleOpen = (event) => {
@@ -97,7 +110,7 @@ export default function AccountPopover() {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+        <MenuItem onClick={logout} sx={{ m: 1 }}>
           Logout
         </MenuItem>
       </Popover>
