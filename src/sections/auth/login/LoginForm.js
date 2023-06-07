@@ -6,7 +6,7 @@ import { useFormik } from "formik";
 
 import axios, { AxiosError } from "axios";
 // @mui
-import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
+import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
@@ -26,7 +26,8 @@ export default function LoginForm(props) {
         "https://2hand.monoinfinity.net/api/v1.0/auth/login",
         values
       );
-      console.log(values)
+      const token = response.data.token;
+      console.log(token);
 
       signIn({
         token: response.data.token,
@@ -37,7 +38,7 @@ export default function LoginForm(props) {
       navigate('/dashboard');
     } catch (err) {
       if (err && err instanceof AxiosError)
-        setError(err.response?.data.message);
+        setError(err.response?.data.message || "Email or password is incorrect");
       else if (err && err instanceof Error) setError(err.message);
 
       console.log("Error: ", err);
@@ -60,6 +61,11 @@ export default function LoginForm(props) {
   return (
 
     <form onSubmit={formik.handleSubmit}>
+      {error && (
+        <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+          {error}
+        </Typography>
+      )}
 
       <Stack spacing={3}>
         <TextField
