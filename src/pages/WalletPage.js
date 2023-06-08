@@ -33,6 +33,8 @@ import {
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+import ApiClient from '../api/ApiClient';
+
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
@@ -166,17 +168,40 @@ export default function UserPage() {
     const filteredUsers = applySortFilter(WALLETLIST, getComparator(order, orderBy), filterName);
 
     const isNotFound = !filteredUsers.length && !!filterName;
-    // Modal user deposit
+    // Modal user add coint
     const [openModal, setOpenModal] = React.useState(false);
     const [value, setValue] = React.useState("");
+
+    const [userID, setUserID] = useState("");
+
+    const addCoin = async (userID, value) => {
+        try {
+            const response = await ApiClient.post(`admin/wallet/user/${userID}/deposit`, {
+                amount: value.toString()
+            });
+            // Xử lý response từ API nếu cần
+            console.log('API Response:', response.data);
+        } catch (error) {
+            // Xử lý error nếu có
+            console.error('API Error:', error);
+        }
+    };
 
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
     const handleChange = (event) => {
         setValue(event.target.value);
     }
+    const handleChangeuserID = (event) => {
+        setUserID(event.target.value);
+    }
     const handleSubmit = () => {
+
+        addCoin(userID, value);
+
         console.log("Submitted value:", value);
+        console.log("Submitted value:", userID);
+
         // TODO: Handle submit logic here
         handleClose();
     }
@@ -193,9 +218,52 @@ export default function UserPage() {
                     <Typography variant="h4" gutterBottom>
                         History deposit
                     </Typography>
-                    <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+                    <Button onClick={handleOpen} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
                         Add coin
                     </Button>
+                    <Modal
+                        open={openModal}
+                        onClose={handleClose}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                    >
+                        <Box sx={style}>
+                            <Typography id="modal-modal-title" variant="h6" component="h2">
+                                Nhập UserID:
+                            </Typography>
+
+                            <TextField
+                                id="outlined-basic"
+                                label="Enter userID"
+                                variant="outlined"
+                                value={userID}
+                                onChange={handleChangeuserID}
+                                sx={{ mt: 2, width: '100%' }}
+                            />
+                            <Typography id="modal-modal-title" variant="h6" component="h2">
+                                Nhập số tiền muốn nạp cho tài khoản
+                            </Typography>
+
+                            <TextField
+                                id="outlined-basic"
+                                label="Enter value"
+                                variant="outlined"
+                                value={value}
+                                onChange={handleChange}
+                                sx={{ mt: 2, width: '100%' }}
+                            />
+
+                            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                                <Button onClick={handleClose} sx={{ mr: 2 }}>
+                                    Đóng
+                                </Button>
+
+                                <Button onClick={handleSubmit} variant="contained">
+                                    Xác nhận
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Modal>
                 </Stack>
             </Container>
             <Card>
