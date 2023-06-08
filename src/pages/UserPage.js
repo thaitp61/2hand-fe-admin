@@ -110,7 +110,9 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [email, setEmail] = useState('');
 
+  const [userID, setUserID] = useState('');
 
   // get list user
   const [users, setUsers] = useState([]);
@@ -141,14 +143,12 @@ export default function UserPage() {
 
 
 
-
-
   // ----------------------------------------------------------------
 
-  const handleOpenMenu = (event, id, email) => {
+  const handleOpenMenu = (id, email) => {
     setEmail(email);
     setUserID(id);
-    setOpen(event.currentTarget);
+    setOpen(true);
   };
 
   const handleCloseMenu = () => {
@@ -212,14 +212,68 @@ export default function UserPage() {
 
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
+
+  const depositAmount = async (userID, value) => {
+    try {
+      const response = await ApiClient.post(`admin/wallet/user/${userID}/deposit`, {
+        amount: value.toString()
+      });
+      // Xử lý response từ API nếu cần
+      console.log('API Response:', response.data);
+    } catch (error) {
+      // Xử lý error nếu có
+      console.error('API Error:', error);
+    }
+  };
+
   const handleChange = (event) => {
     setValue(event.target.value);
   }
+
+
   const handleSubmit = () => {
+
+    depositAmount(userID, value);
+
     console.log("Submitted value:", value);
     // TODO: Handle submit logic here
     handleClose();
   }
+  // band account
+
+  const banAccount = async (userID) => {
+    try {
+      const response = await ApiClient.delete(`admin/users/${userID}`);
+
+      // call api user sau khi ban
+      const responseUser = await ApiClient.get('/admin/users', {
+        params: {
+          page: 0,
+          pageSize: 12,
+          orderBy: 'createdAt',
+          order: 'ASC',
+          isShowInactive: false,
+        },
+      });
+
+      const userList = responseUser?.data?.data; // Danh sách người dùng từ API
+      setUsers(userList);
+      // Xử lý response từ API nếu cần
+      console.log('API Response:', response.data);
+    } catch (error) {
+      // Xử lý error nếu có
+      console.error('API Error:', error);
+    }
+    // Gọi API để ban account với giá trị email và userID
+    // Sử dụng biến state email và userID ở đây
+  };
+
+  const handlebanAccount = () => {
+    banAccount(userID);
+    console.log("Banned Account:", userID);
+
+  }
+
 
 
   return (
@@ -287,7 +341,7 @@ export default function UserPage() {
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={() => handleOpenMenu({ id, email })}>
+                          <IconButton size="large" color="inherit" onClick={() => handleOpenMenu(id, email)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -370,7 +424,7 @@ export default function UserPage() {
         >
           <Box sx={style}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              Nhập số tiền muốn nạp cho tài khoản:
+              Nhập số tiền muốn nạp cho tài khoản {email}:
             </Typography>
 
             <TextField
@@ -394,7 +448,7 @@ export default function UserPage() {
           </Box>
         </Modal>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handlebanAccount} sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Ban
         </MenuItem>
