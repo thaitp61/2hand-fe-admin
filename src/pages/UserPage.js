@@ -1,8 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 
 
 // @mui
@@ -33,10 +32,12 @@ import {
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+import ApiClient from '../api/ApiClient';
+
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import USERLIST from '../_mock/user';
+// import USERLIST from '../_mock/user';
 
 // ----------------------------------------------------------------------
 
@@ -109,7 +110,44 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleOpenMenu = (event) => {
+
+
+  // get list user
+  const [users, setUsers] = useState([]);
+
+
+  useEffect(() => {
+    const getUsers = async () => {
+      try {
+        const response = await ApiClient.get('/admin/users', {
+          params: {
+            page: 0,
+            pageSize: 12,
+            orderBy: 'createdAt',
+            order: 'ASC',
+            isShowInactive: false,
+          },
+        });
+
+        const userList = response?.data?.data; // Danh sách người dùng từ API
+        setUsers(userList);
+      } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+      }
+    };
+
+    getUsers();
+  }, []);
+
+
+
+
+
+  // ----------------------------------------------------------------
+
+  const handleOpenMenu = (event, id, email) => {
+    setEmail(email);
+    setUserID(id);
     setOpen(event.currentTarget);
   };
 
@@ -125,7 +163,7 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.email);
+      const newSelecteds = users.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -161,11 +199,13 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(users, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+
+
   // Modal user deposit
   const [openModal, setOpenModal] = React.useState(false);
   const [value, setValue] = React.useState("");
@@ -180,6 +220,7 @@ export default function UserPage() {
     // TODO: Handle submit logic here
     handleClose();
   }
+
 
   return (
     <>
@@ -208,12 +249,14 @@ export default function UserPage() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={users.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
+                  {/* {users.map((row) => { */}
+
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                     const { id, name, phone, status, email, avatarUrl, wallet } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
@@ -239,15 +282,12 @@ export default function UserPage() {
 
                         <TableCell align="left">{wallet}</TableCell>
 
-
-                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
-
                         <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={() => handleOpenMenu({ id, email })}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -291,7 +331,7 @@ export default function UserPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={users.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -330,7 +370,7 @@ export default function UserPage() {
         >
           <Box sx={style}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              Nhập số tiền muốn nạp cho tài khoản:{filteredUsers.email}
+              Nhập số tiền muốn nạp cho tài khoản:
             </Typography>
 
             <TextField

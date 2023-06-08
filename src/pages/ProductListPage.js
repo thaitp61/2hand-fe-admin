@@ -1,7 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 // @mui
 import {
     Card,
@@ -26,6 +27,8 @@ import {
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+import ApiClient from '../api/ApiClient';
+
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 import ProductListToolbar from '../sections/@dashboard/products/ProductListToolbar';
@@ -90,6 +93,38 @@ export default function UserPage() {
 
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
+
+    // call api product
+    const [products, setProducts] = useState([]);
+
+
+    useEffect(() => {
+        const getProducts = async () => {
+            try {
+                const response = await ApiClient.get('/admin/product', {
+                    params: {
+                        page: 0,
+                        pageSize: 12,
+                        orderBy: 'createdAt',
+                        order: 'ASC',
+                        isShowInactive: false,
+                        minPrice: 0,
+                        maxPrice: 0,
+                        categoryIds: 'string',
+                    },
+                });
+
+                const productList = response?.data?.data; // Danh sách người dùng từ API
+                setProducts(productList);
+            } catch (error) {
+                console.error('Lỗi khi gọi API:', error);
+            }
+        };
+
+        getProducts();
+    }, []);
+    //----------------------------------------------------------------
+
     const handleOpenMenu = (event) => {
         setOpen(event.currentTarget);
     };
@@ -106,7 +141,7 @@ export default function UserPage() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = PRODUCTLIST.map((n) => n.name);
+            const newSelecteds = products.map((n) => n.name);
             setSelected(newSelecteds);
             return;
         }
@@ -142,11 +177,11 @@ export default function UserPage() {
         setFilterName(event.target.value);
     };
 
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - PRODUCTLIST.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - products.length) : 0;
 
-    const filteredUsers = applySortFilter(PRODUCTLIST, getComparator(order, orderBy), filterName);
+    const filteredProducts = applySortFilter(products, getComparator(order, orderBy), filterName);
 
-    const isNotFound = !filteredUsers.length && !!filterName;
+    const isNotFound = !filteredProducts.length && !!filterName;
 
     return (
         <>
@@ -174,15 +209,17 @@ export default function UserPage() {
                                     order={order}
                                     orderBy={orderBy}
                                     headLabel={TABLE_HEAD}
-                                    rowCount={PRODUCTLIST.length}
+                                    rowCount={products.length}
                                     numSelected={selected.length}
                                     onRequestSort={handleRequestSort}
                                     onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
-                                    {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                        const { id, name, email, createAt, status, price, avatarUrl } = row;
+                                    {filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                                        const { id, name, user, createdAt, status, price, imageUrl } = row;
                                         const selectedUser = selected.indexOf(name) !== -1;
+                                        const createdAtDate = new Date(Number(createdAt));
+
                                         return (
                                             <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                                                 <TableCell padding="checkbox">
@@ -191,17 +228,17 @@ export default function UserPage() {
 
                                                 <TableCell component="th" scope="row" padding="none">
                                                     <Stack direction="row" alignItems="center" spacing={2}>
-                                                        <Avatar alt={name} src={avatarUrl} />
+                                                        <Avatar alt={name} src={imageUrl} />
                                                         <Typography variant="subtitle2" noWrap>
                                                             {name}
                                                         </Typography>
                                                     </Stack>
                                                 </TableCell>
 
-                                                <TableCell align="left">{email}</TableCell>
+                                                <TableCell align="left">{user.email}</TableCell>
 
 
-                                                <TableCell align="left">{createAt}</TableCell>
+                                                <TableCell align="left">{createdAtDate.toLocaleString()}</TableCell>
 
                                                 <TableCell align="left">
                                                     <Label color={(status === 'sold' && 'error') || 'success'}>{sentenceCase(status)}</Label>
@@ -252,7 +289,7 @@ export default function UserPage() {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 25]}
                         component="div"
-                        count={PRODUCTLIST.length}
+                        count={products.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}

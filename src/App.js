@@ -12,6 +12,7 @@ import ThemeProvider from './theme';
 // components
 import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
+import { LoginForm } from './sections/auth/login';
 
 
 

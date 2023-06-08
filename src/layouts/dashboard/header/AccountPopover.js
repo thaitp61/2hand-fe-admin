@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSignOut } from 'react-auth-kit';
 import { useNavigate } from 'react-router';
+import axios from 'axios';
 
 // @mui
 import { alpha } from '@mui/material/styles';
 import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
 // mocks_
 import account from '../../../_mock/account';
-
+import ApiClient from '../../../api/ApiClient';
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
@@ -27,7 +28,28 @@ const MENU_OPTIONS = [
 
 // ----------------------------------------------------------------------
 
-export default function AccountPopover() {
+export default function AccountPopover({ onDataReceived }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+
+
+  // call api
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await ApiClient.get('/users/me');
+        const userData = response.data;
+        setName(userData.name);
+        setEmail(userData.email);
+        onDataReceived(userData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   // signout
   const signOut = useSignOut();
   const navigate = useNavigate();
@@ -91,10 +113,10 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {account.displayName}
+            {name}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.email}
+            {email}
           </Typography>
         </Box>
 
