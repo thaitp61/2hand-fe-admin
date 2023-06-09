@@ -34,7 +34,7 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 import ProductListToolbar from '../sections/@dashboard/products/ProductListToolbar';
 
 // mock
-import PRODUCTLIST from '../_mock/productlist';
+// import PRODUCTLIST from '../_mock/productlist';
 
 // ----------------------------------------------------------------------
 

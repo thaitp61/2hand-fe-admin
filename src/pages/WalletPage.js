@@ -1,8 +1,9 @@
+import React, { useEffect, useState } from 'react';
+
+
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
-import * as React from 'react';
 
 
 // @mui
@@ -43,7 +44,7 @@ import WALLETLIST from '../_mock/wallet';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-    { id: 'name', label: 'Name', alignRight: false },
+    { id: 'userID', label: 'User ID', alignRight: false },
     // { id: 'address', label: 'Address', alignRight: false },
     { id: 'email', label: 'Email', alignRight: false },
     { id: 'create_at', label: 'Create At', alignRight: false },
@@ -96,7 +97,7 @@ function applySortFilter(array, comparator, query) {
     return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function WalletPage() {
     const [open, setOpen] = useState(null);
 
     const [page, setPage] = useState(0);
@@ -110,6 +111,38 @@ export default function UserPage() {
     const [filterName, setFilterName] = useState('');
 
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+
+    // call api list transaction
+
+    const [transactions, setTransactions] = useState([]);
+
+
+    useEffect(() => {
+        const getTransactions = async () => {
+            try {
+                const response = await ApiClient.get('admin/wallet/transaction', {
+                    params: {
+                        page: 0,
+                        pageSize: 12,
+                        orderBy: 'createdAt',
+                        order: 'ASC',
+                        isShowInactive: false,
+                        status: 'SUCCESS'
+                    },
+                });
+
+                const transactionList = response?.data?.data; // Danh sách người dùng từ API
+                setTransactions(transactionList);
+            } catch (error) {
+                console.error('Lỗi khi gọi API:', error);
+            }
+        };
+
+        getTransactions();
+    }, []);
+
+    // ----------------------------------------------------------------
 
     const handleOpenMenu = (event) => {
         setOpen(event.currentTarget);
@@ -127,7 +160,7 @@ export default function UserPage() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = WALLETLIST.map((n) => n.email);
+            const newSelecteds = transactions.map((n) => n.email);
             setSelected(newSelecteds);
             return;
         }
@@ -163,9 +196,9 @@ export default function UserPage() {
         setFilterName(event.target.value);
     };
 
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - WALLETLIST.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - transactions.length) : 0;
 
-    const filteredUsers = applySortFilter(WALLETLIST, getComparator(order, orderBy), filterName);
+    const filteredUsers = applySortFilter(transactions, getComparator(order, orderBy), filterName);
 
     const isNotFound = !filteredUsers.length && !!filterName;
     // Modal user add coint
@@ -275,42 +308,43 @@ export default function UserPage() {
                                 order={order}
                                 orderBy={orderBy}
                                 headLabel={TABLE_HEAD}
-                                rowCount={WALLETLIST.length}
+                                rowCount={transactions.length}
                                 numSelected={selected.length}
                                 onRequestSort={handleRequestSort}
                                 onSelectAllClick={handleSelectAllClick}
                             />
                             <TableBody>
                                 {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                    const { id, name, createAt, status, email, avatarUrl, wallet } = row;
-                                    const selectedUser = selected.indexOf(name) !== -1;
+                                    const { id, createdAt, status, avatarUrl, wallet, amount } = row;
+                                    const selectedUser = selected.indexOf(userID) !== -1;
+                                    const createdAtDate = new Date(Number(createdAt));
 
                                     return (
                                         <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                                             <TableCell padding="checkbox">
-                                                <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                                                <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, id)} />
                                             </TableCell>
 
                                             <TableCell component="th" scope="row" padding="none">
                                                 <Stack direction="row" alignItems="center" spacing={2}>
-                                                    <Avatar alt={name} src={avatarUrl} />
+                                                    <Avatar alt={id} src={avatarUrl} />
                                                     <Typography variant="subtitle2" noWrap>
-                                                        {name}
+                                                        {wallet.user.id}
                                                     </Typography>
                                                 </Stack>
                                             </TableCell>
 
-                                            <TableCell align="left">{email}</TableCell>
+                                            <TableCell align="left">{wallet.user.email}</TableCell>
 
-                                            <TableCell align="left">{createAt}</TableCell>
+                                            <TableCell align="left">{createdAtDate.toLocaleString()}</TableCell>
 
-                                            <TableCell align="left">+{wallet}</TableCell>
+                                            <TableCell align="left">+{amount}</TableCell>
 
 
                                             {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
 
                                             <TableCell align="left">
-                                                <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                                                <Label color={(status === 'pending' && 'error') || 'success'}>{sentenceCase(status)}</Label>
                                             </TableCell>
 
                                             <TableCell align="right">
@@ -354,6 +388,15 @@ export default function UserPage() {
                         </Table>
                     </TableContainer>
                 </Scrollbar>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={WALLETLIST.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                />
             </Card>
 
             <Popover
