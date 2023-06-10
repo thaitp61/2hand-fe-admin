@@ -39,7 +39,7 @@ import ApiClient from '../api/ApiClient';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import WALLETLIST from '../_mock/wallet';
+// import WALLETLIST from '../_mock/wallet';
 
 // ----------------------------------------------------------------------
 
@@ -124,10 +124,10 @@ export default function WalletPage() {
                 const response = await ApiClient.get('admin/wallet/transaction', {
                     params: {
                         page: 0,
-                        pageSize: 12,
+                        pageSize: 1000,
                         orderBy: 'createdAt',
                         order: 'ASC',
-                        isShowInactive: false,
+                        isShowInactive: true,
                         status: 'SUCCESS'
                     },
                 });
@@ -391,7 +391,7 @@ export default function WalletPage() {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={WALLETLIST.length}
+                    count={transactions.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}

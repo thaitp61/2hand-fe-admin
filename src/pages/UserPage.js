@@ -144,11 +144,10 @@ export default function UserPage() {
 
 
   // ----------------------------------------------------------------
-
-  const handleOpenMenu = (id, email) => {
+  const handleOpenMenu = (id, email) => (event) => {
     setEmail(email);
     setUserID(id);
-    setOpen(true);
+    setOpen(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
@@ -341,7 +340,7 @@ export default function UserPage() {
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={() => handleOpenMenu(id, email)}>
+                          <IconButton size="large" color="inherit" onClick={handleOpenMenu(id, email)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>

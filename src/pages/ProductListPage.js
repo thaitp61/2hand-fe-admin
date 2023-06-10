@@ -104,7 +104,7 @@ export default function UserPage() {
                 const response = await ApiClient.get('/admin/product', {
                     params: {
                         page: 0,
-                        pageSize: 12,
+                        pageSize: 1000,
                         orderBy: 'createdAt',
                         order: 'ASC',
                         isShowInactive: false,
