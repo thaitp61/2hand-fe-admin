@@ -39,6 +39,8 @@ import ProductListToolbar from '../sections/@dashboard/products/ProductListToolb
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+    { id: 'id', label: 'Product ID', alignRight: false },
+
     { id: 'name', label: 'Name Product', alignRight: false },
     { id: 'email', label: 'Email', alignRight: false },
     { id: 'createAt', label: 'Create At', alignRight: false },
@@ -93,6 +95,8 @@ export default function UserPage() {
 
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
+    const [productID, setProductID] = useState('');
+
 
     // call api product
     const [products, setProducts] = useState([]);
@@ -107,7 +111,7 @@ export default function UserPage() {
                         pageSize: 1000,
                         orderBy: 'createdAt',
                         order: 'ASC',
-                        isShowInactive: false,
+                        isShowInactive: true,
                         minPrice: 0,
                         maxPrice: 0,
                         categoryIds: 'string',
@@ -125,7 +129,8 @@ export default function UserPage() {
     }, []);
     //----------------------------------------------------------------
 
-    const handleOpenMenu = (event) => {
+    const handleOpenMenu = (id) => (event) => {
+        setProductID(id);
         setOpen(event.currentTarget);
     };
 
@@ -147,6 +152,45 @@ export default function UserPage() {
         }
         setSelected([]);
     };
+
+    // ban account 
+    // https://2hand.monoinfinity.net/api/v1.0/admin/product/banned/123123
+
+    const banProduct = async (productID) => {
+        try {
+            const response = await ApiClient.delete(`admin/product/banned/${productID}`);
+
+            // call api user sau khi ban
+            const responseProduct = await ApiClient.get('/admin/product', {
+                params: {
+                    page: 0,
+                    pageSize: 1000,
+                    orderBy: 'createdAt',
+                    order: 'ASC',
+                    isShowInactive: false,
+                    minPrice: 0,
+                    maxPrice: 0,
+                    categoryIds: 'string',
+                },
+            });
+
+            const productList = responseProduct?.data?.data; // Danh sách người dùng từ API
+            setProducts(productList);
+            // Xử lý response từ API nếu cần
+            console.log('API Response:', response.data);
+        } catch (error) {
+            // Xử lý error nếu có
+            console.error('API Error:', error);
+        }
+        // Gọi API để ban account với giá trị email và userID
+        // Sử dụng biến state email và userID ở đây
+    };
+    const handlebanProduct = () => {
+        banProduct(productID);
+        console.log("Banned product:", productID);
+
+    }
+    //----------------------------------------------------------------
 
     const handleClick = (event, name) => {
         const selectedIndex = selected.indexOf(name);
@@ -223,8 +267,10 @@ export default function UserPage() {
                                         return (
                                             <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                                                 <TableCell padding="checkbox">
-                                                    <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                                                    <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, id)} />
                                                 </TableCell>
+                                                <TableCell align="left">{id}</TableCell>
+
 
                                                 <TableCell component="th" scope="row" padding="none">
                                                     <Stack direction="row" alignItems="center" spacing={2}>
@@ -245,7 +291,7 @@ export default function UserPage() {
                                                 </TableCell>
                                                 <TableCell align="left">{price}</TableCell>
                                                 <TableCell align="right">
-                                                    <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                                                    <IconButton size="large" color="inherit" onClick={handleOpenMenu(id)}>
                                                         <Iconify icon={'eva:more-vertical-fill'} />
                                                     </IconButton>
                                                 </TableCell>
@@ -321,7 +367,7 @@ export default function UserPage() {
                     Edit
                 </MenuItem>
 
-                <MenuItem sx={{ color: 'error.main' }}>
+                <MenuItem onClick={handlebanProduct} sx={{ color: 'error.main' }}>
                     <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
                     Ban
                 </MenuItem>
