@@ -6,6 +6,8 @@ import React, { useEffect, useState } from 'react';
 
 // @mui
 import {
+  Tabs,
+  Tab,
   Card,
   Table,
   Stack,
@@ -114,33 +116,51 @@ export default function UserPage() {
 
   const [userID, setUserID] = useState('');
 
+  const [activeTab, setActiveTab] = useState('');
+
+
   // get list user
   const [users, setUsers] = useState([]);
 
 
+  const getUsers = async (status) => {
+    try {
+      const response = await ApiClient.get('/admin/users', {
+        params: {
+          page: 0,
+          pageSize: 100,
+          orderBy: 'createdAt',
+          order: 'ASC',
+          isShowInactive: true,
+          status,
+        },
+      });
+
+      const userList = response?.data?.data; // Danh sách người dùng từ API
+      setUsers(userList);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+
+
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+
+    // Gọi lại API và cập nhật trạng thái sản phẩm theo giá trị newValue
+    getUsers(newValue);
+  };
+
+  // Gọi fetchProducts khi cần thiết trong các sự kiện khác
+  const handleOtherAction = () => {
+    getUsers(activeTab);
+  };
+
+  // Sử dụng useEffect để gọi fetchProducts ban đầu
   useEffect(() => {
-    const getUsers = async () => {
-      try {
-        const response = await ApiClient.get('/admin/users', {
-          params: {
-            page: 0,
-            pageSize: 12,
-            orderBy: 'createdAt',
-            order: 'ASC',
-            isShowInactive: false,
-          },
-        });
-
-        const userList = response?.data?.data; // Danh sách người dùng từ API
-        setUsers(userList);
-      } catch (error) {
-        console.error('Lỗi khi gọi API:', error);
-      }
-    };
-
-    getUsers();
+    getUsers(activeTab);
   }, []);
-
 
 
   // ----------------------------------------------------------------
@@ -293,6 +313,11 @@ export default function UserPage() {
         </Stack>
 
         <Card>
+          <Tabs value={activeTab} onChange={handleTabChange} aria-label="Product status tabs">
+            <Tab label="ALL" value="" />
+            <Tab label="ACTIVE" value="ACTIVE" />
+            <Tab label="INACTIVE" value="INACTIVE" />
+          </Tabs>
           <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
           <Scrollbar>
@@ -308,7 +333,6 @@ export default function UserPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {/* {users.map((row) => { */}
 
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                     const { id, name, phone, status, email, avatarUrl, wallet } = row;
