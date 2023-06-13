@@ -2,9 +2,15 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
+import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 
 // @mui
 import {
+    Tabs,
     Card,
     Table,
     Stack,
@@ -22,12 +28,15 @@ import {
     IconButton,
     TableContainer,
     TablePagination,
+    Modal,
+    TextField,
 } from '@mui/material';
 // components
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 import ApiClient from '../api/ApiClient';
+import menuTabList from '../components/tabs';
 
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
@@ -79,6 +88,18 @@ function applySortFilter(array, comparator, query) {
     }
     return stabilizedThis.map((el) => el[0]);
 }
+// style
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
 
 export default function UserPage() {
     const [open, setOpen] = useState(null);
@@ -97,39 +118,44 @@ export default function UserPage() {
 
     const [productID, setProductID] = useState('');
 
+    const [name, setName] = useState('');
+
+
+
+    const [activeTab, setActiveTab] = useState('');
+
 
     // call api product
     const [products, setProducts] = useState([]);
 
 
-    useEffect(() => {
-        const getProducts = async () => {
-            try {
-                const response = await ApiClient.get('/admin/product', {
-                    params: {
-                        page: 0,
-                        pageSize: 1000,
-                        orderBy: 'createdAt',
-                        order: 'ASC',
-                        isShowInactive: true,
-                        minPrice: 0,
-                        maxPrice: 0,
-                        categoryIds: 'string',
-                    },
-                });
+    const getProducts = async (status) => {
+        try {
+            const response = await ApiClient.get('/admin/product', {
+                params: {
+                    page: 0,
+                    pageSize: 1000,
+                    orderBy: 'createdAt',
+                    order: 'ASC',
+                    isShowInactive: true,
+                    minPrice: 0,
+                    maxPrice: 0,
+                    status,
+                    categoryIds: 'string',
+                },
+            });
 
-                const productList = response?.data?.data; // Danh sách người dùng từ API
-                setProducts(productList);
-            } catch (error) {
-                console.error('Lỗi khi gọi API:', error);
-            }
-        };
+            const productList = response?.data?.data; // Danh sách người dùng từ API
+            setProducts(productList);
+        } catch (error) {
+            console.error('Lỗi khi gọi API:', error);
+        }
+    };
 
-        getProducts();
-    }, []);
     //----------------------------------------------------------------
 
-    const handleOpenMenu = (id) => (event) => {
+    const handleOpenMenu = (id, name) => (event) => {
+        setName(name);
         setProductID(id);
         setOpen(event.currentTarget);
     };
@@ -155,28 +181,29 @@ export default function UserPage() {
 
     // ban account 
     // https://2hand.monoinfinity.net/api/v1.0/admin/product/banned/123123
+    // Modal user deposit
+    const [openModal, setOpenModal] = useState(false);
+    const [value, setValue] = useState("");
+
+    const handleOpen = () => setOpenModal(true);
+    const handleClose = () => setOpenModal(false);
+
+
+    const handleSubmit = () => {
+
+        banProduct(productID);
+
+        console.log("Submitted value:", value);
+        // TODO: Handle submit logic here
+        handleClose();
+    }
 
     const banProduct = async (productID) => {
         try {
             const response = await ApiClient.delete(`admin/product/banned/${productID}`);
 
-            // call api user sau khi ban
-            const responseProduct = await ApiClient.get('/admin/product', {
-                params: {
-                    page: 0,
-                    pageSize: 1000,
-                    orderBy: 'createdAt',
-                    order: 'ASC',
-                    isShowInactive: false,
-                    minPrice: 0,
-                    maxPrice: 0,
-                    categoryIds: 'string',
-                },
-            });
+            getProducts(activeTab);
 
-            const productList = responseProduct?.data?.data; // Danh sách người dùng từ API
-            setProducts(productList);
-            // Xử lý response từ API nếu cần
             console.log('API Response:', response.data);
         } catch (error) {
             // Xử lý error nếu có
@@ -221,6 +248,25 @@ export default function UserPage() {
         setFilterName(event.target.value);
     };
 
+
+    const handleTabChange = (event, newValue) => {
+        setActiveTab(newValue);
+
+        // Gọi lại API và cập nhật trạng thái sản phẩm theo giá trị newValue
+        getProducts(newValue);
+    };
+
+    // Gọi fetchProducts khi cần thiết trong các sự kiện khác
+    const handleOtherAction = () => {
+        getProducts(activeTab);
+    };
+
+    // Sử dụng useEffect để gọi fetchProducts ban đầu
+    useEffect(() => {
+        getProducts(activeTab);
+    }, []);
+
+
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - products.length) : 0;
 
     const filteredProducts = applySortFilter(products, getComparator(order, orderBy), filterName);
@@ -244,6 +290,14 @@ export default function UserPage() {
                 </Stack>
 
                 <Card>
+                    <Tabs value={activeTab} onChange={handleTabChange} aria-label="Product status tabs">
+                        <Tab label="ALL" value="" />
+                        <Tab label="ACTIVE" value="ACTIVE" />
+                        <Tab label="INACTIVE" value="INACTIVE" />
+                        <Tab label="POST" value="POST" />
+                        <Tab label="BANNED" value="BANNED" />
+                    </Tabs>
+
                     <ProductListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
                     <Scrollbar>
@@ -259,6 +313,7 @@ export default function UserPage() {
                                     onSelectAllClick={handleSelectAllClick}
                                 />
                                 <TableBody>
+
                                     {filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                                         const { id, name, user, createdAt, status, price, imageUrl } = row;
                                         const selectedUser = selected.indexOf(name) !== -1;
@@ -291,13 +346,14 @@ export default function UserPage() {
                                                 </TableCell>
                                                 <TableCell align="left">{price}</TableCell>
                                                 <TableCell align="right">
-                                                    <IconButton size="large" color="inherit" onClick={handleOpenMenu(id)}>
+                                                    <IconButton size="large" color="inherit" onClick={handleOpenMenu(id, name)}>
                                                         <Iconify icon={'eva:more-vertical-fill'} />
                                                     </IconButton>
                                                 </TableCell>
                                             </TableRow>
                                         );
                                     })}
+
                                     {emptyRows > 0 && (
                                         <TableRow style={{ height: 53 * emptyRows }}>
                                             <TableCell colSpan={6} />
@@ -367,10 +423,37 @@ export default function UserPage() {
                     Edit
                 </MenuItem>
 
-                <MenuItem onClick={handlebanProduct} sx={{ color: 'error.main' }}>
+                {/* <MenuItem onClick={handlebanProduct} sx={{ color: 'error.main' }}>
+                    <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+                    Ban
+                </MenuItem> */}
+
+
+                <MenuItem onClick={handleOpen} sx={{ color: 'error.main' }}>
                     <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
                     Ban
                 </MenuItem>
+                <Modal
+                    open={openModal}
+                    onClose={handleClose}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={style}>
+                        <Typography id="modal-modal-title" variant="h6" component="h2">
+                            Bạn có chắc chắn muốn BAN sản phẩm: {name}
+                        </Typography>
+                        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                            <Button onClick={handleClose} sx={{ mr: 2 }}>
+                                Đóng
+                            </Button>
+
+                            <Button onClick={handleSubmit} variant="contained">
+                                Xác nhận
+                            </Button>
+                        </Box>
+                    </Box>
+                </Modal>
             </Popover>
         </>
     );
