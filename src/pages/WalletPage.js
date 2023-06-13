@@ -28,6 +28,8 @@ import {
     Box,
     Modal,
     TextField,
+    Tabs,
+    Tab,
 } from '@mui/material';
 
 // components
@@ -44,6 +46,8 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+    { id: 'id', label: 'Transaction ID', alignRight: false },
+
     { id: 'userID', label: 'User ID', alignRight: false },
     // { id: 'address', label: 'Address', alignRight: false },
     { id: 'email', label: 'Email', alignRight: false },
@@ -113,38 +117,46 @@ export default function WalletPage() {
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
 
+    const [activeTab, setActiveTab] = useState('');
+
+    const [transactionID, setTransactionID] = useState('')
+
+    const [amount, setAmount] = useState('')
+
+
     // call api list transaction
 
     const [transactions, setTransactions] = useState([]);
 
 
-    useEffect(() => {
-        const getTransactions = async () => {
-            try {
-                const response = await ApiClient.get('admin/wallet/transaction', {
-                    params: {
-                        page: 0,
-                        pageSize: 1000,
-                        orderBy: 'createdAt',
-                        order: 'ASC',
-                        isShowInactive: true,
-                        status: 'SUCCESS'
-                    },
-                });
 
-                const transactionList = response?.data?.data; // Danh sách người dùng từ API
-                setTransactions(transactionList);
-            } catch (error) {
-                console.error('Lỗi khi gọi API:', error);
-            }
-        };
+    const getTransactions = async (status) => {
+        try {
+            const response = await ApiClient.get('admin/wallet/transaction', {
+                params: {
+                    page: 0,
+                    pageSize: 1000,
+                    orderBy: 'createdAt',
+                    order: 'ASC',
+                    isShowInactive: true,
+                    status
+                },
+            });
 
-        getTransactions();
-    }, []);
+            const transactionList = response?.data?.data; // Danh sách người dùng từ API
+            setTransactions(transactionList);
+        } catch (error) {
+            console.error('Lỗi khi gọi API:', error);
+        }
+    };
+
+
 
     // ----------------------------------------------------------------
 
-    const handleOpenMenu = (event) => {
+    const handleOpenMenu = (id, amout) => (event) => {
+        setAmount(amout);
+        setTransactionID(id);
         setOpen(event.currentTarget);
     };
 
@@ -203,6 +215,12 @@ export default function WalletPage() {
     const isNotFound = !filteredUsers.length && !!filterName;
     // Modal user add coint
     const [openModal, setOpenModal] = React.useState(false);
+
+    const [OpenModalAccept, setOpenModalAccept] = React.useState(false);
+
+    const [OpenModalReject, setOpenModalReject] = React.useState(false);
+
+
     const [value, setValue] = React.useState("");
 
     const [userID, setUserID] = useState("");
@@ -220,8 +238,46 @@ export default function WalletPage() {
         }
     };
 
+    const AcceptTransaction = async (transactionID) => {
+        try {
+            const response = await ApiClient.post(`admin/wallet/approve/${transactionID}`);
+
+            getTransactions(activeTab);
+
+            // Xử lý response từ API nếu cần
+            console.log('API Response:', response.data);
+        } catch (error) {
+            // Xử lý error nếu có
+            console.error('API Error:', error);
+        }
+    };
+
+    const RejectTransaction = async (transactionID) => {
+        try {
+            const response = await ApiClient.delete(`admin/wallet/reject/${transactionID}`);
+
+            getTransactions(activeTab);
+
+            // Xử lý response từ API nếu cần
+            console.log('API Response:', response.data);
+        } catch (error) {
+            // Xử lý error nếu có
+            console.error('API Error:', error);
+        }
+    };
+
     const handleOpen = () => setOpenModal(true);
+    const handleOpenAccept = () => setOpenModalAccept(true);
+
+    const handleOpenReject = () => setOpenModalReject(true);
+
     const handleClose = () => setOpenModal(false);
+
+    const handleCloseAccept = () => setOpenModalAccept(false);
+
+    const handleCloseReject = () => setOpenModalReject(false);
+
+
     const handleChange = (event) => {
         setValue(event.target.value);
     }
@@ -238,6 +294,39 @@ export default function WalletPage() {
         // TODO: Handle submit logic here
         handleClose();
     }
+
+    const handleSubmitAcceptDeposit = () => {
+
+        AcceptTransaction(transactionID, value)
+
+        console.log("Submitted value:", value);
+        console.log("Submitted value:", userID);
+
+        // TODO: Handle submit logic here
+        handleCloseAccept();
+    }
+
+    const handleSubmitRejectDeposit = () => {
+
+        RejectTransaction(transactionID, value)
+
+        console.log("Submitted value:", value);
+        console.log("Submitted value:", userID);
+
+        // TODO: Handle submit logic here
+        handleCloseReject();
+    }
+
+    const handleTabChange = (event, newValue) => {
+        setActiveTab(newValue);
+
+        // Gọi lại API và cập nhật trạng thái sản phẩm theo giá trị newValue
+        getTransactions(newValue);
+    };
+    useEffect(() => {
+        getTransactions(activeTab);
+    }, []);
+
 
     return (
         <>
@@ -300,6 +389,12 @@ export default function WalletPage() {
                 </Stack>
             </Container>
             <Card>
+                <Tabs value={activeTab} onChange={handleTabChange} aria-label="Product status tabs">
+                    <Tab label="ALL" value="" />
+                    <Tab label="SUCCESS" value="SUCCESS" />
+                    <Tab label="PENDING" value="PENDING" />
+                    <Tab label="REJECT" value="FAILED" />
+                </Tabs>
                 <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
                 <Scrollbar>
                     <TableContainer sx={{ minWidth: 800 }}>
@@ -324,15 +419,15 @@ export default function WalletPage() {
                                             <TableCell padding="checkbox">
                                                 <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, id)} />
                                             </TableCell>
-
                                             <TableCell component="th" scope="row" padding="none">
                                                 <Stack direction="row" alignItems="center" spacing={2}>
-                                                    <Avatar alt={id} src={avatarUrl} />
                                                     <Typography variant="subtitle2" noWrap>
-                                                        {wallet.user.id}
+                                                        {id}
                                                     </Typography>
                                                 </Stack>
                                             </TableCell>
+                                            <TableCell align="left">{wallet.user.id}</TableCell>
+
 
                                             <TableCell align="left">{wallet.user.email}</TableCell>
 
@@ -348,7 +443,7 @@ export default function WalletPage() {
                                             </TableCell>
 
                                             <TableCell align="right">
-                                                <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                                                <IconButton size="large" color="inherit" onClick={handleOpenMenu(id, amount)}>
                                                     <Iconify icon={'eva:more-vertical-fill'} />
                                                 </IconButton>
                                             </TableCell>
@@ -417,46 +512,61 @@ export default function WalletPage() {
                     },
                 }}
             >
-                <MenuItem onClick={handleOpen}>
+
+                <MenuItem onClick={handleOpenAccept}>
                     <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-                    Deposit
+                    Accept
                 </MenuItem>
+
                 <Modal
-                    open={openModal}
-                    onClose={handleClose}
+                    open={OpenModalAccept}
+                    onClose={handleCloseAccept}
                     aria-labelledby="modal-modal-title"
                     aria-describedby="modal-modal-description"
                 >
                     <Box sx={style}>
                         <Typography id="modal-modal-title" variant="h6" component="h2">
-                            Nhập số tiền muốn nạp cho tài khoản:{filteredUsers.email}
+                            Bạn có chắc chắn nhập nhận transaction id: {transactionID} nạp {amount} coin ?
                         </Typography>
 
-                        <TextField
-                            id="outlined-basic"
-                            label="Enter value"
-                            variant="outlined"
-                            value={value}
-                            onChange={handleChange}
-                            sx={{ mt: 3, width: '100%' }}
-                        />
-
                         <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                            <Button onClick={handleClose} sx={{ mr: 2 }}>
+                            <Button onClick={handleCloseAccept} sx={{ mr: 2 }}>
                                 Đóng
                             </Button>
 
-                            <Button onClick={handleSubmit} variant="contained">
+                            <Button onClick={handleSubmitAcceptDeposit} variant="contained">
                                 Xác nhận
                             </Button>
                         </Box>
                     </Box>
                 </Modal>
 
-                <MenuItem sx={{ color: 'error.main' }}>
+                <MenuItem sx={{ color: 'error.main' }} onClick={handleOpenReject}>
                     <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-                    Ban
+                    Reject
                 </MenuItem>
+                <Modal
+                    open={OpenModalReject}
+                    onClose={handleCloseReject}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={style}>
+                        <Typography id="modal-modal-title" variant="h6" component="h2">
+                            Bạn có chắc chắn từ chối transaction id: {transactionID} nạp {amount} coin ?
+                        </Typography>
+
+                        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                            <Button onClick={handleCloseReject} sx={{ mr: 2 }}>
+                                Đóng
+                            </Button>
+
+                            <Button onClick={handleSubmitRejectDeposit} variant="contained">
+                                Xác nhận
+                            </Button>
+                        </Box>
+                    </Box>
+                </Modal>
             </Popover>
         </>
     );
