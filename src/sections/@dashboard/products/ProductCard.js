@@ -25,7 +25,8 @@ ShopProductCard.propTypes = {
 };
 
 export default function ShopProductCard({ product }) {
-  const { name, cover, price, colors, status, priceSale } = product;
+  const { name, imageUrls, price, colors, status, priceSale } = product;
+
 
   return (
     <Card>
@@ -45,7 +46,9 @@ export default function ShopProductCard({ product }) {
             {status}
           </Label>
         )}
-        <StyledProductImg alt={name} src={cover} />
+        {imageUrls && imageUrls.length > 0 && (
+          <StyledProductImg alt={name} src={imageUrls[0]} />
+        )}
       </Box>
 
       <Stack spacing={2} sx={{ p: 3 }}>
@@ -56,7 +59,7 @@ export default function ShopProductCard({ product }) {
         </Link>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <ColorPreview colors={colors} />
+          {/* <ColorPreview colors={colors} /> */}
           <Typography variant="subtitle1">
             <Typography
               component="span"
@@ -66,7 +69,7 @@ export default function ShopProductCard({ product }) {
                 textDecoration: 'line-through',
               }}
             >
-              {priceSale && fCurrency(priceSale)}
+              {/* {priceSale && fCurrency(priceSale)} */}
             </Typography>
             &nbsp;
             {fCurrency(price)}

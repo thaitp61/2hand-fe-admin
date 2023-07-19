@@ -1,11 +1,12 @@
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // @mui
 import { Container, Stack, Typography } from '@mui/material';
 // components
 import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from '../sections/@dashboard/products';
 // mock
 import PRODUCTS from '../_mock/products';
+import ApiClient from '../api/ApiClient';
 
 // ----------------------------------------------------------------------
 
@@ -19,6 +20,29 @@ export default function ProductsPage() {
   const handleCloseFilter = () => {
     setOpenFilter(false);
   };
+  const [products, setProducts] = useState([]);
+  const getProducts = async (status) => {
+    try {
+      const response = await ApiClient.get('/admin/product', {
+        params: {
+          page: 0,
+          pageSize: 20,
+          orderBy: 'createdAt',
+          order: 'ASC',
+          minPrice: 0,
+          maxPrice: 0,
+          status,
+          categoryIds: 'string',
+        },
+      });
+      const productList = response?.data?.data; // Danh sách người dùng từ API
+      setProducts(productList);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+  getProducts();
+
 
   return (
     <>
@@ -42,7 +66,7 @@ export default function ProductsPage() {
           </Stack>
         </Stack>
 
-        <ProductList products={PRODUCTS} />
+        <ProductList products={products} />
         <ProductCartWidget />
       </Container>
     </>
