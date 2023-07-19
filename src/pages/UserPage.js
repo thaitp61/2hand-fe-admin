@@ -48,7 +48,7 @@ const TABLE_HEAD = [
   // { id: 'address', label: 'Address', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Phone', alignRight: false },
-  { id: 'wallet', label: 'Wallet', alignRight: false },
+  { id: 'createAt', label: 'CreateAt', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
   // { id: 'Phone', label: 'Phone', alignRight: false },
 
@@ -128,7 +128,7 @@ export default function UserPage() {
       const response = await ApiClient.get('/admin/users', {
         params: {
           page: 0,
-          pageSize: 100,
+          pageSize: 500,
           orderBy: 'createdAt',
           order: 'ASC',
           isShowInactive: true,
@@ -335,8 +335,9 @@ export default function UserPage() {
                 <TableBody>
 
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, phone, status, email, avatarUrl, wallet } = row;
+                    const { id, name, phone, status, email, avatarUrl, createdAt } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
+                    const createdAtDate = new Date(Number(createdAt));
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
@@ -357,7 +358,7 @@ export default function UserPage() {
 
                         <TableCell align="left">{phone}</TableCell>
 
-                        <TableCell align="left">{wallet}</TableCell>
+                        <TableCell align="left">{createdAtDate.toLocaleString()}</TableCell>
 
                         <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>

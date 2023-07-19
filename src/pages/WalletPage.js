@@ -40,6 +40,7 @@ import ApiClient from '../api/ApiClient';
 
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+import { WalletListToolbar } from '../sections/@dashboard/wallet';
 // mock
 // import WALLETLIST from '../_mock/wallet';
 
@@ -210,9 +211,9 @@ export default function WalletPage() {
 
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - transactions.length) : 0;
 
-    const filteredUsers = applySortFilter(transactions, getComparator(order, orderBy), filterName);
+    const filteredWallet = applySortFilter(transactions, getComparator(order, orderBy), filterName);
 
-    const isNotFound = !filteredUsers.length && !!filterName;
+    const isNotFound = !filteredWallet.length && !!filterName;
     // Modal user add coint
     const [openModal, setOpenModal] = React.useState(false);
 
@@ -395,7 +396,7 @@ export default function WalletPage() {
                     <Tab label="PENDING" value="PENDING" />
                     <Tab label="REJECT" value="FAILED" />
                 </Tabs>
-                <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+                <WalletListToolbar numSelected={selected?.length} filterName={filterName} onFilterName={handleFilterByName} />
                 <Scrollbar>
                     <TableContainer sx={{ minWidth: 800 }}>
                         <Table>
@@ -409,7 +410,7 @@ export default function WalletPage() {
                                 onSelectAllClick={handleSelectAllClick}
                             />
                             <TableBody>
-                                {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                                {filteredWallet.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                                     const { id, createdAt, status, avatarUrl, wallet, amount } = row;
                                     const selectedUser = selected.indexOf(userID) !== -1;
                                     const createdAtDate = new Date(Number(createdAt));

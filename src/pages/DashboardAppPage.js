@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
+import { useEffect, useState } from 'react';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
@@ -17,11 +18,66 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
+import ApiClient from '../api/ApiClient';
 
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const [countProducts, setCountProducts] = useState("")
+  const [countSoldProducts, setSoldCountProducts] = useState("")
+
+
+  // useEffect(() => {
+  const getProducts = async () => {
+    try {
+      const response = await ApiClient.get('/admin/product', {
+        params: {
+          isShowInactive: true,
+        },
+      });
+      const countProduct = response?.data?.count; // Danh sách người dùng từ API
+      setCountProducts(countProduct);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+  getProducts();
+  // }, []);
+
+  const [countUsers, setCountUsers] = useState("");
+
+
+  const getUsers = async () => {
+    try {
+      const response = await ApiClient.get('/admin/users', {
+        params: {
+          isShowInactive: true,
+        },
+      });
+      const countUser = response?.data?.count; // Danh sách người dùng từ API
+      setCountUsers(countUser);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+  getUsers();
+
+  const getItemSoldProducts = async () => {
+    try {
+      const response = await ApiClient.get('/admin/product', {
+        params: {
+          isShowInactive: true,
+          status: "ACTIVE"
+        },
+      });
+      const countSoldProduct = response?.data?.count; // Danh sách người dùng từ API
+      setSoldCountProducts(countSoldProduct);
+    } catch (error) {
+      console.error('Lỗi khi gọi API:', error);
+    }
+  };
+  getItemSoldProducts();
 
   return (
     <>
@@ -36,11 +92,11 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Weekly Post" total={100} icon={'ant-design:calendar-filled'} />
+            <AppWidgetSummary title="Weekly Post" total={countProducts} icon={'ant-design:calendar-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="New Users" total={55} color="info" icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="New Users" total={countUsers} color="info" icon={'ant-design:apple-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -48,7 +104,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Sold" total={500} color="error" icon={'ant-design:bug-filled'} />
+            <AppWidgetSummary title="Item Sold" total={countSoldProducts} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
