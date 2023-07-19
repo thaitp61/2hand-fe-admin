@@ -26,58 +26,65 @@ export default function DashboardAppPage() {
   const theme = useTheme();
   const [countProducts, setCountProducts] = useState("")
   const [countSoldProducts, setSoldCountProducts] = useState("")
-
-
-  // useEffect(() => {
-  const getProducts = async () => {
-    try {
-      const response = await ApiClient.get('/admin/product', {
-        params: {
-          isShowInactive: true,
-        },
-      });
-      const countProduct = response?.data?.count; // Danh sách người dùng từ API
-      setCountProducts(countProduct);
-    } catch (error) {
-      console.error('Lỗi khi gọi API:', error);
-    }
-  };
-  getProducts();
-  // }, []);
-
   const [countUsers, setCountUsers] = useState("");
+  console.log(countProducts?.data)
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const response = await ApiClient.get('/admin/product', {
+          params: {
+            page: 0,
+            pageSize: 5,
+            orderBy: 'createdAt',
+            order: 'ASC',
+            isShowInactive: true,
+            minPrice: 0,
+            maxPrice: 0,
+            categoryIds: 'string',
+          },
+        });
+        const countProduct = response?.data; // Danh sách người dùng từ API
+        setCountProducts(countProduct);
+      } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+      }
+    };
+    getProducts();
+
+    const getUsers = async () => {
+      try {
+        const response = await ApiClient.get('/admin/users', {
+          params: {
+            isShowInactive: true,
+          },
+        });
+        const countUser = response?.data?.count; // Danh sách người dùng từ API
+        setCountUsers(countUser);
+      } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+      }
+    };
+
+    getUsers(); // Gọi API khi component được render lần đầu tiên
+
+    const getItemSoldProducts = async () => {
+      try {
+        const response = await ApiClient.get('/admin/product', {
+          params: {
+            isShowInactive: true,
+            status: "ACTIVE"
+          },
+        });
+        const countSoldProduct = response?.data?.count; // Danh sách người dùng từ API
+        setSoldCountProducts(countSoldProduct);
+      } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+      }
+    };
+    getItemSoldProducts();
+  }, []);
 
 
-  const getUsers = async () => {
-    try {
-      const response = await ApiClient.get('/admin/users', {
-        params: {
-          isShowInactive: true,
-        },
-      });
-      const countUser = response?.data?.count; // Danh sách người dùng từ API
-      setCountUsers(countUser);
-    } catch (error) {
-      console.error('Lỗi khi gọi API:', error);
-    }
-  };
-  getUsers();
-
-  const getItemSoldProducts = async () => {
-    try {
-      const response = await ApiClient.get('/admin/product', {
-        params: {
-          isShowInactive: true,
-          status: "ACTIVE"
-        },
-      });
-      const countSoldProduct = response?.data?.count; // Danh sách người dùng từ API
-      setSoldCountProducts(countSoldProduct);
-    } catch (error) {
-      console.error('Lỗi khi gọi API:', error);
-    }
-  };
-  getItemSoldProducts();
 
   return (
     <>
@@ -92,7 +99,7 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Weekly Post" total={countProducts} icon={'ant-design:calendar-filled'} />
+            <AppWidgetSummary title="Weekly Post" total={countProducts?.count} icon={'ant-design:calendar-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -198,16 +205,18 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
-            <AppNewsUpdate
-              title="News Update"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: faker.name.jobTitle(),
-                description: faker.name.jobTitle(),
-                image: `/assets/images/covers/cover_${index + 1}.jpg`,
-                postedAt: faker.date.recent(),
-              }))}
-            />
+            {countProducts?.data && countProducts.data.length > 0 ? (
+              <AppNewsUpdate
+                title="News Update"
+                list={countProducts.data.map((product) => ({
+                  id: product.id,
+                  title: product.name.charAt(0).toUpperCase() + product.name.slice(1),
+                  description: product.description,
+                  image: product.imageUrls[0],
+                  postedAt: faker.date.recent(),
+                }))}
+              />
+            ) : null}
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
@@ -234,22 +243,22 @@ export default function DashboardAppPage() {
               list={[
                 {
                   name: 'FaceBook',
-                  value: 323234,
+                  value: 1213,
                   icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} />,
                 },
                 {
-                  name: 'Google',
-                  value: 341212,
-                  icon: <Iconify icon={'eva:google-fill'} color="#DF3E30" width={32} />,
+                  name: 'Instagram',
+                  value: 263,
+                  icon: <Iconify icon={'skill-icons:instagram'} color="#DF3E30" width={32} />,
                 },
                 {
-                  name: 'Linkedin',
-                  value: 411213,
-                  icon: <Iconify icon={'eva:linkedin-fill'} color="#006097" width={32} />,
+                  name: 'Tiktok',
+                  value: 1532,
+                  icon: <Iconify icon={'logos:tiktok-icon'} color="#006097" width={32} />,
                 },
                 {
                   name: 'Twitter',
-                  value: 443232,
+                  value: 0,
                   icon: <Iconify icon={'eva:twitter-fill'} color="#1C9CEA" width={32} />,
                 },
               ]}
