@@ -29,7 +29,7 @@ export default function DashboardAppPage() {
   const [countUsers, setCountUsers] = useState("");
   const [boostRankReport, setBoostRankReport] = useState("");
 
-  console.log(boostRankReport)
+  console.log("boot rank", boostRankReport)
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -88,14 +88,24 @@ export default function DashboardAppPage() {
 
     const getBoostRankReport = async () => {
       try {
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
+        const endDay = `${year}-${month}-${day}`;
         const response = await ApiClient.post('/wallet/boost-rank-report',
           {
             startDate: '2023-04-19',
-            endDate: '2023-07-19',
+            endDate: endDay,
           }
         );
-        const getBoostRank = response?.data;
-        setBoostRankReport(getBoostRank);
+        if (response.data) {
+          setBoostRankReport(response?.data);
+        } else {
+          console.error('Dữ liệu từ API không tồn tại');
+        }
       } catch (error) {
         console.error('Lỗi khi gọi API:', error);
       }
@@ -176,20 +186,24 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentVisits
-              title="The Number Of Use Push Posts"
-              chartData={[
-                { label: '1 day', value: boostRankReport.package1 },
-                { label: '3 days', value: boostRankReport.package2 },
-                { label: '7 days', value: boostRankReport.package3 },
-              ]}
-              chartColors={[
-                theme.palette.primary.main,
-                theme.palette.info.main,
-                theme.palette.warning.main,
-                theme.palette.error.main,
-              ]}
-            />
+            {boostRankReport && boostRankReport.package1 && boostRankReport.package2 && boostRankReport.package3 ? (
+              <AppCurrentVisits
+                title="The Number Of Use Push Posts"
+                chartData={[
+                  { label: '1 day', value: boostRankReport.package1 },
+                  { label: '3 days', value: boostRankReport.package2 },
+                  { label: '7 days', value: boostRankReport.package3 },
+                ]}
+                chartColors={[
+                  theme.palette.primary.main,
+                  theme.palette.info.main,
+                  theme.palette.warning.main,
+                  theme.palette.error.main,
+                ]}
+              />
+            ) : (
+              <p>Loading...</p> // Hoặc thông báo khác nếu không có dữ liệu
+            )}
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
