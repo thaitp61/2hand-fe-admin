@@ -27,7 +27,9 @@ export default function DashboardAppPage() {
   const [countProducts, setCountProducts] = useState("")
   const [countSoldProducts, setSoldCountProducts] = useState("")
   const [countUsers, setCountUsers] = useState("");
-  console.log(countProducts?.data)
+  const [boostRankReport, setBoostRankReport] = useState("");
+
+  console.log(boostRankReport)
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -82,7 +84,26 @@ export default function DashboardAppPage() {
       }
     };
     getItemSoldProducts();
+
+
+    const getBoostRankReport = async () => {
+      try {
+        const response = await ApiClient.post('/wallet/boost-rank-report',
+          {
+            startDate: '2023-04-19',
+            endDate: '2023-07-19',
+          }
+        );
+        const getBoostRank = response?.data;
+        setBoostRankReport(getBoostRank);
+      } catch (error) {
+        console.error('Lỗi khi gọi API:', error);
+      }
+    };
+    getBoostRankReport();
   }, []);
+
+
 
 
 
@@ -156,12 +177,11 @@ export default function DashboardAppPage() {
 
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
-              title="Current Visits"
+              title="The Number Of Use Push Posts"
               chartData={[
-                { label: 'America', value: 4344 },
-                { label: 'Asia', value: 5435 },
-                { label: 'Europe', value: 1443 },
-                { label: 'Africa', value: 4443 },
+                { label: '1 day', value: boostRankReport.package1 },
+                { label: '3 days', value: boostRankReport.package2 },
+                { label: '7 days', value: boostRankReport.package3 },
               ]}
               chartColors={[
                 theme.palette.primary.main,
