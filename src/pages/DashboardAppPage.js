@@ -138,7 +138,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Access Times" total={1000} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="Access Times" total={1253} color="warning" icon={'ant-design:windows-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -196,8 +196,8 @@ export default function DashboardAppPage() {
                 ]}
                 chartColors={[
                   theme.palette.primary.main,
-                  theme.palette.info.main,
-                  theme.palette.warning.main,
+                  // theme.palette.info.main,
+                  theme.palette.success.main,
                   theme.palette.error.main,
                 ]}
               />
@@ -282,7 +282,7 @@ export default function DashboardAppPage() {
                 },
                 {
                   name: 'Instagram',
-                  value: 263,
+                  value: 427,
                   icon: <Iconify icon={'skill-icons:instagram'} color="#DF3E30" width={32} />,
                 },
                 {
