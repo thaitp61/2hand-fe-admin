@@ -92,7 +92,12 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (_user) => {
+      const nameMatch = _user.name && _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+      const emailMatch = _user.email && _user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+      const phoneMatch = _user.phone && _user.phone.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+      return nameMatch || emailMatch || phoneMatch;
+    });
   }
   return stabilizedThis.map((el) => el[0]);
 }

@@ -130,7 +130,7 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Weekly Post" total={countProducts?.count} icon={'ant-design:calendar-filled'} />
+            <AppWidgetSummary title="Number of Posts" total={countProducts?.count} icon={'ant-design:calendar-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
@@ -142,7 +142,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Sold" total={countSoldProducts} color="error" icon={'ant-design:bug-filled'} />
+            <AppWidgetSummary title="Sold Item" total={countSoldProducts} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
@@ -277,12 +277,12 @@ export default function DashboardAppPage() {
               list={[
                 {
                   name: 'FaceBook',
-                  value: 1213,
+                  value: 1192,
                   icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} />,
                 },
                 {
                   name: 'Instagram',
-                  value: 427,
+                  value: 434,
                   icon: <Iconify icon={'skill-icons:instagram'} color="#DF3E30" width={32} />,
                 },
                 {

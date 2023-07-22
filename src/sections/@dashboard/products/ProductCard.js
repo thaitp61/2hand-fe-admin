@@ -54,13 +54,13 @@ export default function ShopProductCard({ product }) {
       <Stack spacing={2} sx={{ p: 3 }}>
         <Link color="inherit" underline="hover">
           <Typography variant="subtitle2" noWrap>
-            {name}
+            {name.charAt(0).toUpperCase() + name.slice(1)}
           </Typography>
         </Link>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           {/* <ColorPreview colors={colors} /> */}
-          <Typography variant="subtitle1">
+          <Typography variant="subtitle1" >
             <Typography
               component="span"
               variant="body1"
@@ -70,9 +70,15 @@ export default function ShopProductCard({ product }) {
               }}
             >
               {/* {priceSale && fCurrency(priceSale)} */}
-            </Typography>
+            </Typography >
             &nbsp;
-            {fCurrency(price)}
+            <Typography variant="body1" color="error">
+              {/* {fCurrency(price)} */}
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(price)}
+            </Typography>
           </Typography>
         </Stack>
       </Stack>
